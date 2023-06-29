@@ -43,7 +43,7 @@ let lastComment: Comment;
 const TIME_FORMAT = "dddd, MMMM D h:mm A";
 
 function fetchVersions() {
-  fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
+  return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
     method: "GET",
     headers: {
       "X-Figma-Token": FIGMA_TOKEN,
@@ -67,7 +67,7 @@ function fetchVersions() {
 }
 
 function fetchComments() {
-  fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/comments`, {
+  return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/comments`, {
     method: "GET",
     headers: {
       "X-Figma-Token": FIGMA_TOKEN,
@@ -180,7 +180,7 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
         ],
       };
     }
-    fetch(SLACK_WEBHOOK, {
+    return fetch(SLACK_WEBHOOK, {
       method: "POST",
       body: JSON.stringify(msgTemplate),
     });
@@ -189,12 +189,8 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
   }
 }
 
-function cornJobs() {
-  fetchVersions();
-  fetchComments();
-}
-
-export default function handler(request: NextApiRequest, response: NextApiResponse) {
-  cornJobs();
+export default async function handler(request: NextApiRequest, response: NextApiResponse) {
+  await fetchComments();
+  await fetchVersions();
   response.status(200).json({ success: true, msg: "start crop success" });
 }
