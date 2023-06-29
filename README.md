@@ -1,34 +1,96 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<h1 align="center">FigmaSync for Slack</h1>
 
-## Getting Started
+<p align="center">Automatically send notifications to Slack when your Figma UI changed or there are new comments.</p>
 
-First, run the development server:
+## Example
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+![example](./public/example.png)
+
+## Setting up
+
+- One click to deploy on Vercel in minutes
+- Set up app environment variable [env.local](#envlocal)
+- Set up the cron jobs
+
+_Note: we build our app with Next.js's serverless function and deploy it on Vercel by free. In free plan, we are able to set cron job by twice a day, so we need Vercel pro plan or set up the cron job to call API regular by ourself_
+![cron job]('./../public/cron_job.png)
+
+## env.local
+
+set up the env.local and paste to vercel app environment variable
+
+```js
+FIGMA_TOKEN = xxx; // Figma Token
+FIGMA_FILE_ID = xxx; // The Figma file ID which you want to listen
+FIGMA_FILE_LINK = xxx; // The Figma file link which you are listening,like https://www.figma.com/file/[FIGMA_FILE_ID]/[FIGMA_FILE_NAME]
+SLACK_WEBHOOK = xxx; // The Slack Incoming Webhooks url
+FIGMA_COMMENT_LINK = xxx; // https://www.figma.com/file/[FIGMA_FILE_ID]?mode=design#{ID}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## About Figma
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Get a `Personal Access Token`
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   1. While logged into Figma on the web or the desktop app, visit your [Account Settings](https://www.figma.com/settings)
+   2. Under **Personal Access Tokens**, click "Create a new personal access token"
+   3. Name the the access token whatever you'd like, for example: `figma-slack-updates`
+   4. Copy the token - this is your only chance to do so! This is your `FIGMA_TOKEN`
+      ![Copy Personal Access Tokens](./public/figma_token.png)
 
-## Learn More
+2. Get your file key
 
-To learn more about Next.js, take a look at the following resources:
+   Visit the Figma file that you'd like to post updates for and copy its `file key`. The file key can be found when you copy the file's link or visit the file on the web: figma.com/file/`file key`/... This is your `FIGMA_FILE_ID`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## About Slack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1. Get Slack webhook url
 
-## Deploy on Vercel
+- Go to slack app gallery
+- Add `Incoming WebHooks` to the channel which you want to push updates
+  ![Add to Channel](./public/slack_add_channel.png)
+- Copy the `Webhook Url`, this is your `SLACK_WEBHOOK`
+  ![Copy webhook](./public/slack_copy_webhook.png)
+- Also, you can custom a app name and app logo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+_**Or:** you can create your own Slack app here => https://api.slack.com/apps_
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Cron job
+
+two ways to set up cron job
+
+- Vercel Pro user
+- Find a tool by yourself
+
+### Vercel Pro Trial
+
+if you are vercel pro user, then you can use vercel's Corn job directly. Just add a vercel.json at root folder.
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/figma",
+      "schedule": "*/3 * * * *"
+    }
+  ]
+}
+// above means `/api/figma` will be called every 3 minutes, but you need change /api/figma/route.ts to GET function
+```
+
+More detail => https://vercel.com/docs/cron-jobs
+
+### Find a tool by yourself
+
+you can search for free cron job or deploy one by yourself
+
+examples:
+
+- Cron-job.Org(free)
+  ![cron-job org](./public/cron_job_org.png)
+
+## Reference
+
+- Figma REST APIs => https://www.figma.com/developers/api
+- Create Slack APP with Webhook feature => https://api.slack.com/apps
+
+`Enjoy your bot. :)`
