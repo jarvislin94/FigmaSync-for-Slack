@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import dayjs from "dayjs";
 
 type User = {
   id: string;
@@ -38,6 +39,9 @@ const FIGMA_COMMENT_LINK = process.env.FIGMA_COMMENT_LINK ?? "https://www.figma.
 let intervalId: NodeJS.Timer;
 let lastVersion: Version;
 let lastComment: Comment;
+
+// Thursday, June 29 1:46 AM
+const TIME_FORMAT = "dddd, MMMM D h:mm A";
 
 function fetchVersions() {
   fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
@@ -96,12 +100,14 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
     let msgTemplate;
     if (type === "version") {
       const repeatedBlocks: any = [];
+
       (msg as Version[]).map((item) => {
+        const createAt = dayjs(item.created_at).format(TIME_FORMAT);
         repeatedBlocks.push({
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*By <donotclick.me|${item.user.handle}>*\n${item.created_at}\n${item.label}\n${item.description}`,
+            text: `*By <donotclick.me|${item.user.handle}>*\n${createAt}\n${item.label}\n${item.description}`,
           },
           accessory: {
             type: "image",
@@ -122,7 +128,7 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
             text: {
               type: "plain_text",
               emoji: true,
-              text: "👉 Looks like Figma UI have new changes:",
+              text: "👉 Looks like Figma UI has new changes:",
             },
           },
           {
@@ -141,11 +147,12 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
     } else if (type === "comment") {
       const repeatedBlocks: any = [];
       (msg as Comment[]).map((item) => {
+        const createAt = dayjs(item.created_at).format(TIME_FORMAT);
         repeatedBlocks.push({
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `*${item.created_at}*\n${item.message}\n_From <donotclick.me|${item.user.handle}>_`,
+            text: `*${createAt}*\n${item.message}\n_From <donotclick.me|${item.user.handle}>_`,
           },
         });
         return item;
@@ -157,7 +164,7 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
             text: {
               type: "plain_text",
               emoji: true,
-              text: "👉 Looks like Figma UI have new comments:",
+              text: "👉 Looks like Figma UI has new comments:",
             },
           },
           {
@@ -190,7 +197,7 @@ export async function POST(request: Request) {
   intervalId = setInterval(() => {
     fetchVersions();
     fetchComments();
-  }, 2 * 60 * 1000);
+  }, 5 * 60 * 1000);
   return NextResponse.json({
     message: "create success.",
   });
