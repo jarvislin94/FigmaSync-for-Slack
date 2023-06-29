@@ -45,7 +45,7 @@ const TIME_FORMAT = "dddd, MMMM D h:mm A";
 
 const INTERVAL_TIME = 1 * 2 * 1000;
 
-function fetchVersions(resolve: any) {
+function fetchVersions() {
   return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
     method: "GET",
     headers: {
@@ -60,7 +60,7 @@ function fetchVersions(resolve: any) {
         const newVersions = versions.slice(0, prevVersionIdx);
         console.log("newVersions:", newVersions, versions);
         if (newVersions.length) {
-          msgToSlack("version", newVersions).then(() => resolve(true));
+          msgToSlack("version", newVersions);
           lastVersion = newVersions[0];
         }
       } else {
@@ -70,7 +70,7 @@ function fetchVersions(resolve: any) {
     .catch((err) => console.log(err));
 }
 
-function fetchComments(resolve: any) {
+function fetchComments() {
   return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/comments`, {
     method: "GET",
     headers: {
@@ -86,7 +86,7 @@ function fetchComments(resolve: any) {
           const newComments = comments.slice(0, prevCommentIdx);
           console.log("newComments:", newComments, comments);
           if (newComments.length) {
-            msgToSlack("comment", newComments).then(() => resolve(true));
+            msgToSlack("comment", newComments);
             lastComment = newComments[0];
           }
         }
@@ -184,7 +184,7 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
         ],
       };
     }
-    return fetch(SLACK_WEBHOOK, {
+    fetch(SLACK_WEBHOOK, {
       method: "POST",
       body: JSON.stringify(msgTemplate),
     });
@@ -200,8 +200,9 @@ export async function POST(request: Request) {
       clearInterval(intervalId);
     }
     intervalId = setInterval(() => {
-      fetchVersions(resolve);
-      fetchComments(resolve);
+      fetchVersions();
+      fetchComments();
+      resolve(true);
     }, INTERVAL_TIME);
   });
 
