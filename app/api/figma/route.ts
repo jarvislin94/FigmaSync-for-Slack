@@ -43,6 +43,8 @@ let lastComment: Comment;
 // Thursday, June 29 1:46 AM
 const TIME_FORMAT = "dddd, MMMM D h:mm A";
 
+const INTERVAL_TIME = 1 * 20 * 1000;
+
 function fetchVersions() {
   fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
     method: "GET",
@@ -197,7 +199,7 @@ export async function POST(request: Request) {
   intervalId = setInterval(() => {
     fetchVersions();
     fetchComments();
-  }, 5 * 60 * 1000);
+  }, INTERVAL_TIME);
   return NextResponse.json({
     message: "create success.",
   });
