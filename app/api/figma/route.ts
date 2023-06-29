@@ -45,8 +45,8 @@ const TIME_FORMAT = "dddd, MMMM D h:mm A";
 
 const INTERVAL_TIME = 1 * 20 * 1000;
 
-function fetchVersions() {
-  fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
+function fetchVersions(resolve: any) {
+  return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
     method: "GET",
     headers: {
       "X-Figma-Token": FIGMA_TOKEN,
@@ -60,7 +60,7 @@ function fetchVersions() {
         const newVersions = versions.slice(0, prevVersionIdx);
         console.log("newVersions:", newVersions, versions);
         if (newVersions.length) {
-          msgToSlack("version", newVersions);
+          msgToSlack("version", newVersions).then(() => resolve(true));
           lastVersion = newVersions[0];
         }
       } else {
@@ -70,8 +70,8 @@ function fetchVersions() {
     .catch((err) => console.log(err));
 }
 
-function fetchComments() {
-  fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/comments`, {
+function fetchComments(resolve: any) {
+  return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/comments`, {
     method: "GET",
     headers: {
       "X-Figma-Token": FIGMA_TOKEN,
@@ -86,7 +86,7 @@ function fetchComments() {
           const newComments = comments.slice(0, prevCommentIdx);
           console.log("newComments:", newComments, comments);
           if (newComments.length) {
-            msgToSlack("comment", newComments);
+            msgToSlack("comment", newComments).then(() => resolve(true));
             lastComment = newComments[0];
           }
         }
@@ -97,8 +97,8 @@ function fetchComments() {
     .catch((err) => console.log(err));
 }
 
-function msgToSlack(type: "version", msg: Version[]): void;
-function msgToSlack(type: "comment", msg: Comment[]): void;
+function msgToSlack(type: "version", msg: Version[]): Promise<any>;
+function msgToSlack(type: "comment", msg: Comment[]): Promise<any>;
 function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
   try {
     let msgTemplate;
@@ -184,7 +184,7 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
         ],
       };
     }
-    fetch(SLACK_WEBHOOK, {
+    return fetch(SLACK_WEBHOOK, {
       method: "POST",
       body: JSON.stringify(msgTemplate),
     });
@@ -194,30 +194,33 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
   }
 }
 
-function cornJobs() {
-  if (intervalId) {
-    clearInterval(intervalId);
-  }
-  intervalId = setTimeout(() => {
-    fetchVersions();
-    fetchComments();
-    cornJobs();
-  }, INTERVAL_TIME);
-}
-
 export async function POST(request: Request) {
-  cornJobs();
+  const p = new Promise((resolve, reject) => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+    intervalId = setInterval(() => {
+      fetchVersions(resolve);
+      fetchComments(resolve);
+    }, INTERVAL_TIME);
+  });
+
+  await p;
   return NextResponse.json({
     message: "create success.",
+    lastVersion: lastVersion,
+    lastComment: lastComment,
   });
 }
 
 export async function DELETE(request: Request) {
   if (intervalId) {
-    clearTimeout(intervalId);
+    clearInterval(intervalId);
     intervalId = null;
     return NextResponse.json({
       message: "clear successful.",
+      lastVersion: lastVersion,
+      lastComment: lastComment,
     });
   }
   return NextResponse.json({
