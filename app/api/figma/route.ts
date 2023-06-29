@@ -36,7 +36,7 @@ const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK!;
 const FIGMA_FILE_LINK = process.env.FIGMA_FILE_LINK ?? "https://www.figma.com/file/your_file_id/your_file_name";
 const FIGMA_COMMENT_LINK = process.env.FIGMA_COMMENT_LINK ?? "https://www.figma.com/file/your_file_id/your_file_name";
 
-let intervalId: NodeJS.Timer;
+let intervalId: NodeJS.Timer | null;
 let lastVersion: Version;
 let lastComment: Comment;
 
@@ -58,6 +58,7 @@ function fetchVersions() {
         const versions = data.versions;
         const prevVersionIdx = versions.findIndex((item) => item.id === lastVersion.id);
         const newVersions = versions.slice(0, prevVersionIdx);
+        console.log("newVersions:", newVersions, versions);
         if (newVersions.length) {
           msgToSlack("version", newVersions);
           lastVersion = newVersions[0];
@@ -83,6 +84,7 @@ function fetchComments() {
         if (comments[0].id > lastComment.id) {
           const prevCommentIdx = comments.findIndex((item) => item.id === lastComment.id);
           const newComments = comments.slice(0, prevCommentIdx);
+          console.log("newComments:", newComments, comments);
           if (newComments.length) {
             msgToSlack("comment", newComments);
             lastComment = newComments[0];
@@ -102,7 +104,6 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
     let msgTemplate;
     if (type === "version") {
       const repeatedBlocks: any = [];
-
       (msg as Version[]).map((item) => {
         const createAt = dayjs(item.created_at).format(TIME_FORMAT);
         repeatedBlocks.push({
@@ -188,6 +189,7 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
       body: JSON.stringify(msgTemplate),
     });
   } catch (err) {
+    console.log(err);
     throw err;
   }
 }
@@ -213,6 +215,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   if (intervalId) {
     clearTimeout(intervalId);
+    intervalId = null;
     return NextResponse.json({
       message: "clear successful.",
     });
