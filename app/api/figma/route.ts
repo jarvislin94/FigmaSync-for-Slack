@@ -192,14 +192,19 @@ function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
   }
 }
 
-export async function POST(request: Request) {
+function cornJobs() {
   if (intervalId) {
     clearInterval(intervalId);
   }
-  intervalId = setInterval(() => {
+  intervalId = setTimeout(() => {
     fetchVersions();
     fetchComments();
+    cornJobs();
   }, INTERVAL_TIME);
+}
+
+export async function POST(request: Request) {
+  cornJobs();
   return NextResponse.json({
     message: "create success.",
   });
@@ -207,7 +212,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   if (intervalId) {
-    clearInterval(intervalId);
+    clearTimeout(intervalId);
     return NextResponse.json({
       message: "clear successful.",
     });
