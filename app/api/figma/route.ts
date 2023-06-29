@@ -97,8 +97,8 @@ function fetchComments() {
     .catch((err) => console.log(err));
 }
 
-function msgToSlack(type: "version", msg: Version[]): Promise<any>;
-function msgToSlack(type: "comment", msg: Comment[]): Promise<any>;
+function msgToSlack(type: "version", msg: Version[]): void;
+function msgToSlack(type: "comment", msg: Comment[]): void;
 function msgToSlack(type: "version" | "comment", msg: Version[] | Comment[]) {
   try {
     let msgTemplate;
