@@ -1,0 +1,8 @@
+{
+    "crons": [
+        {
+            "path": "/api/figma/cron",
+            "schedule": "*/1 * * * *"
+        }
+    ]
+}
