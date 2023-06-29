@@ -38,12 +38,12 @@ const FIGMA_COMMENT_LINK = process.env.FIGMA_COMMENT_LINK ?? "https://www.figma.
 
 let intervalId: NodeJS.Timer | null;
 let lastVersion: Version;
-let lastComment: Comment;
+let lastComment: Comment | any = { id: "3731491036" };
 
 // Thursday, June 29 1:46 AM
 const TIME_FORMAT = "dddd, MMMM D h:mm A";
 
-const INTERVAL_TIME = 1 * 20 * 1000;
+const INTERVAL_TIME = 1 * 2 * 1000;
 
 function fetchVersions(resolve: any) {
   return fetch(`https://api.figma.com/v1/files/${FIGMA_FILE_ID}/versions`, {
