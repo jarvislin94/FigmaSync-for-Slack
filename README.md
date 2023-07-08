@@ -8,13 +8,13 @@
 
 ## Setting up
 
-- One click to deploy on Vercel in minutes
+- One click to deploy on Vercel in minutes  
   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FJackZong%2FFigmaSync-for-Slack&env=FIGMA_TOKEN&env=FIGMA_FILE_ID&env=FIGMA_FILE_LINK&env=SLACK_WEBHOOK&env=FIGMA_COMMENT_LINK&project-name=FigmaSync-for-Slack&repository-name=FigmaSync-for-Slack)
 - Set up app environment variable [env.local](#envlocal)
 - After deploy, check bot runs well
 
   - `GET {your_app_url}/api/healthcheck` should returns `{status: 200,message: "success."}`
-  - `POST {your_app_url}/api/healthcheck` should returns `{status: 200,message: "initial data"}`
+  - `POST {your_app_url}/api/figma` should returns `{status: 200,message: "initial data"}`
   - Then go to Figma try to make new comment or save new version history.
     Like this:
     ![New version](./public/new_version.png)
