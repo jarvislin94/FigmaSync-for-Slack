@@ -11,6 +11,13 @@
 - One click to deploy on Vercel in minutes
 - Set up app environment variable [env.local](#envlocal)
 - Set up the cron jobs
+- Check bot runs well
+
+  - `GET {your_app_url}/api/healthcheck` should returns `{status: 200,message: "success."}`
+  - `POST {your_app_url}/api/healthcheck` should returns `{status: 200,message: "initial data"}`
+  - Then go to Figma try to make new comment or save new version history.
+    Like this:
+    ![New version](./public/new_version.png)
 
 _Note: we build our app with Next.js's serverless function and deploy it on Vercel by free. In free plan, we are able to set cron job by twice a day, so we need Vercel pro plan or set up the cron job to call API regular by ourself_
 ![cron job]('./../public/cron_job.png)
